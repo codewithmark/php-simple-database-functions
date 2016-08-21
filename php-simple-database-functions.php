@@ -3,14 +3,14 @@
  * Library Name: PHP Simple Database Functions
  * Version Number: 1.16.8.17
  * Original Author: Mark Kumar
- * Documentation: http://codewithmark.com
+ * Documentation: http://codewithmark.com/?p=251
  * Licensed under the MIT license
  */
 
-define('Host', 						'');
-define('DBName', 					'');
-define('DBUserID', 				'');
-define('DBUserPassword', 	'');
+define('Host', 	'');
+define('DBName','');
+define('DBUserID','');
+define('DBUserPassword','');
 
 
 
