@@ -31,13 +31,13 @@ function DBConnect()
   // Check connection
   if (!$connection) 
   {
-  	//echo ("conasfasdfas");
-  	die("Connection failed: " . mysqli_connect_error());
+   //echo ("connection failed!");
+   die("Connection failed: " . mysqli_connect_error());
     return false;
   }
   if($connection)
   {
-   	//echo ("connedted");
+    //echo ("connection success");
     return $connection;
   }
 
@@ -93,14 +93,7 @@ function CleanHTMLData($Data)
 }  
 
 
-/*
-	Different 4 types of queries
-	- Select (QGetRows) - all rows
-	- Insert - add row(s)
-	- Update - will update a field
-	- Delete - will delete row(s)
-*/
-
+//Database queries
 
 function QGetRows($SQLStatement)
 {
@@ -121,8 +114,6 @@ function QGetRows($SQLStatement)
 	// Connection is made
 	if ($con) 
 	{
-		//$SQLStatement = "SELECT * FROM UserProfile WHERE user_id='markkumar'"; 
-
 		$q = $con->query($SQLStatement);
 	    $row = $q->num_rows;
 
@@ -164,13 +155,12 @@ function QInsert($TableName,$row_arrays = array() )
 	/*
 		$insert_arrays[] = array
 		(
-				'user_acc_id' => "multiple_updated value now",
-				'pod_id' => $GetUniqueFileName,
-			'pod_title'=>'pod_title'
+			'fieldname1'=>'value1',
+			'fieldname2'=>'value2'
 		);
 		
 		Call it like this:
-		QInsert('table',$insert_arrays);
+		QInsert('TableName',$insert_arrays);
 
 		If ran successfully, it will return the insert id else 0
 
@@ -268,10 +258,12 @@ function QInsert($TableName,$row_arrays = array() )
 	}
 
 }
+
 function Qry($SQLStatement)
 {
   /*
   * This is for genearl purpose query. 
+  * Call it like this:Qry("SELECT * FROM users WHERE user_name='codewithmark'");
   * If it ran successfully, it will return 1 else 0.
   */
   // Create connection
