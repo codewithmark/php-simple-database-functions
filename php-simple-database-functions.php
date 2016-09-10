@@ -1,7 +1,7 @@
 <?php
 /*
  * Library Name: PHP Simple Database Functions
- * Version Number: 1.16.8.17
+ * Version Number: 1.16.9.10
  * Original Author: Mark Kumar
  * Documentation: http://codewithmark.com/?p=251
  * Licensed under the MIT license
@@ -12,6 +12,12 @@ define('DBName','');
 define('DBUserID','');
 define('DBUserPassword','');
 
+
+
+//To show query error messages set on or to hide then set to off
+//For trouble shooting only
+define('ShowQryErrors','on');//on or off
+ 
 
 
 function DBConnect()
@@ -31,75 +37,34 @@ function DBConnect()
   // Check connection
   if (!$connection) 
   {
-   //echo ("connection failed!");
-   die("Connection failed: " . mysqli_connect_error());
+  	//echo ("conasfasdfas");
+  	die("Connection failed: " . mysqli_connect_error());
     return false;
   }
   if($connection)
   {
-    //echo ("connection success");
+   	//echo ("conneted");
     return $connection;
   }
 
 }
  
-function DBConClose($con)
-{
-	/* 
-	* This will close the database connection
-	*/
 
-	// Get thread id
-	$t_id=mysqli_thread_id($con);
+/*
+	Different 5 types of queries
+	- Select: all rows
+	- Insert: add row(s)
+	- Update: will update a field
+	- Delete: will delete row(s)
+	- Qry: general purpose query
+*/
 
-	//close current connection
-	mysqli_close($con);
-
-	// Kill connection
-	mysqli_kill($con,$t_id);    
-  
-}
-
-function CleanDBData($Data)
-{
-	/*
-	* This will help in preventing sql injections
-	*/
-
-	// Create connection
-	$con =  DBConnect();  
-	$str = mysqli_real_escape_string($con,$Data); 
-	return $str;
-
-	//Close the current connection to the database
-	DBConClose($con);     
-} 
-
-function CleanHTMLData($Data)
-{
-  /*
-  * This will remove all HTML tags
-  */
-  
-  // Create connection
-  $con =  DBConnect();  
-  $str = mysqli_real_escape_string($con,$Data);
-	
-	$result = preg_replace('/(?:<|&lt;)\/?([a-zA-Z]+) *[^<\/]*?(?:>|&gt;)/', '', $str) ;
-  return $result;
-
-  //Close the current connection to the database
-  DBConClose($con);     
-}  
-
-
-//Database queries
-
-function QGetRows($SQLStatement)
+//--->Select - Start
+function Select($SQLStatement)
 {
 	/*
 	* This will get all of the rows from the table.  
-	* Call it like - $Qry = QGetRows( "SELECT * FROM Users WHERE site='codewithmark'")  
+	* Call it like - $Qry = Select( "SELECT * FROM Users WHERE site='codewithmark'")  
 	*/
 	
 	// Create connection
@@ -108,20 +73,33 @@ function QGetRows($SQLStatement)
 	// Check connection
 	if (!$con) 
 	{
-		die("Connection failed in QGetRows function - " . mysqli_connect_error());
+		die("Connection failed in Select function - " . mysqli_connect_error());
 	}
 
 	// Connection is made
 	if ($con) 
 	{
-		$q = $con->query($SQLStatement);
-	    $row = $q->num_rows;
+		//$SQLStatement = "SELECT * FROM UserProfile WHERE user_id='markkumar'"; 
 
-	    //now rows found
-	    if($row <1)
-	    {
-	      $result = $row;  
-	    }
+		$q = $con->query($SQLStatement);
+	  
+	  //Fail to run query.
+    if(!$q)
+    {
+      //show error message
+      if(ShowQryErrors == 'on')
+      {
+        die( mysqli_error($con) );  
+      } 
+    }
+
+    $row = $q->num_rows;
+
+    //no rows found
+    if($row <1)
+    {
+      $result = $row;  
+    }
 		//only one row of data
 		else if($row == 1)
 		{
@@ -140,27 +118,30 @@ function QGetRows($SQLStatement)
 			//merger array to get all rows
 			$result = array_merge($d1 , $d2);	
 		}
-		//Will return a row data
-		return $result;
-		//This will clear query cache
-		mysqli_free_result($result);
 
 		//Close the current connection to the database
-		DBConClose($con);
+		mysqli_close($con);
+		
+		//Will return a row data
+		return $result;
   	}
 }
+//--->Select - End
 
-function QInsert($TableName,$row_arrays = array() ) 
+
+//--->Insert - Start
+function Insert($TableName,$row_arrays = array() ) 
 { 
 	/*
 		$insert_arrays[] = array
 		(
-			'fieldname1'=>'value1',
-			'fieldname2'=>'value2'
+				'user_acc_id' => "multiple_updated value now",
+				'pod_id' => $GetUniqueFileName,
+			'pod_title'=>'pod_title'
 		);
 		
 		Call it like this:
-		QInsert('TableName',$insert_arrays);
+		Insert('table',$insert_arrays);
 
 		If ran successfully, it will return the insert id else 0
 
@@ -241,197 +222,51 @@ function QInsert($TableName,$row_arrays = array() )
 		$q = $con->query($sql);
 		if(!$q)
 		{
-		  //$result = false;
-		  //$result = "Error: "  . mysqli_error($con);
+      //show error message
+      if(ShowQryErrors == 'on')
+      {
+        die( mysqli_error($con) );  
+      } 
 		  $result =  0;
 		}
 		if($q)
 		{
 		  //Will give the last inserted id
-		  $result =  $con->insert_id;
-		   
+		  $result =  $con->insert_id;		   
 		}
-		return $result;
-		
+
 		//Close the current connection to the database
-		DBConClose($con); 
+		mysqli_close($con);
+		
+		//Will return a row data
+		return $result; 
 	}
-
 }
+//--->Insert - End
 
-function Qry($SQLStatement)
-{
-  /*
-  * This is for genearl purpose query. 
-  * Call it like this:Qry("SELECT * FROM users WHERE user_name='codewithmark'");
-  * If it ran successfully, it will return 1 else 0.
-  */
-  // Create connection
-  $con =  DBConnect();
-  
-  // Check connection
-  if (!$con) 
-  {
-    die("Connection failed in query function - " . mysqli_connect_error());
-  }
-  
-  if($con)
-  {
-    $q = $con->query($SQLStatement);
-    
-    if(!$q)
-    {
-      //$result = false;
-      $result = 0;
-    }
-    if($q)
-    {       
-      //$result = true;
-      $result = 1;
-    }
-
-    return $result;
-
-    //Close the current connection to the database
-    DBConClose($con);
-  }
-}
-
-
-
-function QDelete($strTableName,$strFieldName,$strFieldDeleteValueEqualTo)
-{
-  /*
-  * This will delete all rows where field name equals delete value. 
-  * If it ran successfully, it will return 1 else 0
-  */
-  
-  // Create connection
-  $con =  DBConnect();
-  
-  // Check connection
-  if (!$con) 
-  {
-    die("Connection failed in query function - " . mysqli_connect_error());
-  }
-  //check to see if the record exist
-  $QFindRec = "SELECT * FROM $strTableName WHERE $strFieldName='$strFieldDeleteValueEqualTo'";
-  
-  if($con)
-  {
-    $q = $con->query($QFindRec);
-
-    if($q->num_rows > 0 )
-    {
-      //found the record and now delete it
-      $QDeleteRec = "DELETE FROM $strTableName WHERE $strFieldName='$strFieldDeleteValueEqualTo'";
-      $con->query($QDeleteRec);
-
-      $result = 1;
-    }
-    if($q->num_rows < 1)
-    {   
-      $result = 0;
-    }
-    return $result; 
-    
-    //Close the current connection to the database
-    DBConClose($con); 
-  }
-}
-
-function QTotalRows($SQLStatement)
-{
-  /*
-  * This will get/return total rows based on the sql statement  
-  */
-  
-  // Create connection
-  $con =  DBConnect();
-  
-  // Check connection
-  if (!$con) 
-  {
-    die("Connection failed in query function - " . mysqli_connect_error());
-  }
-  //$SQLStatement = "SELECT * FROM $strTableName WHERE $strFieldName='$strFieldCheckName'";
-  if($con)
-  {
-    $q = $con->query($SQLStatement);
- 
-    return $q->num_rows ;
-    
-    //This will clear query cache
-    mysqli_free_result($result);
-    
-    //Close the current connection to the database
-    DBConClose($con); 
-  }
-}
-
-
-function QRecValue($strTableName,$strFieldName,$strFieldCheckName,$strGetFieldValue)
-{
-  /*
-  * This will look up and return the field value of a record
-  * If it ran successfully, it will reture the field value
-  */
-  
-  // Create connection
-  $con =  DBConnect();
-  
-  // Check connection
-  if (!$con) 
-  {
-    die("Connection failed in query function - " . mysqli_connect_error());
-  }
-  $SQLStatement = "SELECT * FROM $strTableName WHERE $strFieldName='$strFieldCheckName'";
-  if($con)
-  {
-    $q = $con->query($SQLStatement);
-
-    if($q->num_rows < 1)
-    {
-      $result = 0;
-    }
-    if($q->num_rows >0 )
-    {       
-      //$row = mysqli_num_rows($q);
-			while($row = $q->fetch_assoc()) 
-			{
-				$data =  $row[$strGetFieldValue];
-			}
-      $result = $data;
-    }
-    return $result;
-    
-    //This will clear query cache
-    mysqli_free_result($result);
-    
-    //Close the current connection to the database
-    DBConClose($con); 
-  }
-} 
-
-
-function QUpdate($strTableName, $array_fields, $array_where)
+//--->Update - Start
+function Update($strTableName, $array_fields, $array_where)
 { 
   /*
-  * This will update the row values
-  * If it ran successfully, it will return 1 else 0
-  * 
-    $strTableName = "TableName"
+  	This will update the row values
+  	If it ran successfully, it will return 1 else will
+   
+    $strTableName = "TableName";
+
+    //It would be in your best interested to run your values through CleanDBData($Data) function 
+    //to prevent any sql injections which potentially cause problems in your database.
+
     $array_fields = array(
-      'FieldName1' => FieldValue1,
-      'FieldName2' => FieldValue2,
-      'FieldName3' => FieldValue3,
+      'FieldName1' => CleanDBData(FieldValue1),
+      'FieldName2' => CleanDBData(FieldValue2),
+      'FieldName3' => CleanDBData(FieldValue3),
     );
 
     $array_where = array(    
       'rec_id' => 2,
       'rec_dt' => date("Y-m-d"),    
     );
-    Call it like this:  QUpdate($strTableName, $array_fields, $array_where)
+    Call it like this:  Update($strTableName, $array_fields, $array_where)
   * 
   */
 
@@ -469,19 +304,157 @@ function QUpdate($strTableName, $array_fields, $array_where)
 	{
 		$q = $con->query($SQLStatement);
 		if(!$q)
-	    {
-	      $result =  0;
-	    }
-	    if($q)
-	    {  
-	      $result = 1;
-	    }
-	    return $result;
+    {
+      //show error message
+      if(ShowQryErrors == 'on')
+      {
+        die( mysqli_error($con) );  
+      } 
 
-	    //Close the current connection to the database
-	    DBConClose($con); 
-	
+      $result =  0;
+    }
+    if($q)
+    {  
+      $result = 1;
+    }
+
+		//Close the current connection to the database
+		mysqli_close($con);
+		
+		//Will return a row data
+		return $result;	
 	}
 }
+//--->Update - End
 
+//--->Delete - Start
+function Delete($strTableName,$strFieldName,$strFieldDeleteValueEqualTo)
+{
+  /*
+  	This will delete all rows where field name equals delete value. 
+  	If it ran successfully, it will return 1 else 0
+
+  	Call it like this:  Delete("users","user_id","codewithmark");
+
+  */
+  
+  // Create connection
+  $con =  DBConnect();
+  
+  // Check connection
+  if (!$con) 
+  {
+    die("Connection failed in query function - " . mysqli_connect_error());
+  }
+  //check to see if the record exist
+  $QFindRec = "SELECT * FROM $strTableName WHERE $strFieldName='$strFieldDeleteValueEqualTo'";
+  
+  if($con)
+  {
+    $q = $con->query($QFindRec);
+
+    if($q->num_rows > 0 )
+    {
+      //found the record(s) and now delete it
+      $QDeleteRec = "DELETE FROM $strTableName WHERE $strFieldName='$strFieldDeleteValueEqualTo'";
+      $con->query($QDeleteRec);
+
+      $result = 1;
+    }
+    if($q->num_rows < 1)
+    {   
+      $result = 0;
+    }
+
+		//Close the current connection to the database
+		mysqli_close($con);
+		
+		//Will return a row data
+		return $result;
+  }
+}
+//--->Delete - End
+
+
+
+
+function Qry($SQLStatement)
+{
+  /*
+   This is for general purpose query. 
+   If it ran successfully, it will return 1 else 0.
+
+   Call it like this:  Qry('select * from user where id=100');
+
+  */
+  // Create connection
+  $con =  DBConnect();
+  
+  // Check connection
+  if (!$con) 
+  {
+    die("Connection failed in query function - " . mysqli_connect_error());
+  }
+  
+  if($con)
+  {
+    $q = $con->query($SQLStatement);
+    
+    if(!$q)
+    {
+      //show error message
+      if(ShowQryErrors  == 'on')
+      {
+        die( mysqli_error($con) );  
+      } 
+      $result = 0;
+    }
+    if($q)
+    {       
+      //$result = true;
+      $result = 1;
+    }
+
+		//Close the current connection to the database
+		mysqli_close($con);
+		
+		//Will return a row data
+		return $result;
+  }
+}
+
+
+function CleanDBData($Data)
+{
+	/*
+ 		This will help in preventing sql injections
+	*/
+	// Create connection
+	$con =  DBConnect();  
+	$str = mysqli_real_escape_string($con,$Data); 
+
+	//Close the current connection to the database
+	mysqli_close($con);
+	return $str;
+} 
+
+function CleanHTMLData($Data)
+{
+  /*
+  	This will remove all HTML tags
+  */
+  
+  // Create connection
+  $con =  DBConnect();  
+  $str = mysqli_real_escape_string($con,$Data);
+	
+	$result = preg_replace('/(?:<|&lt;)\/?([a-zA-Z]+) *[^<\/]*?(?:>|&gt;)/', '', $str);
+
+	//Close the current connection to the database
+	mysqli_close($con);
+  
+  return $result;
+    
+} 
+ 
 ?>
