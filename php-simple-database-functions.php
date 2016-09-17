@@ -133,15 +133,16 @@ function Select($SQLStatement)
 function Insert($TableName,$row_arrays = array() ) 
 { 
 	/*
+		$strTableName = "TalbeName";
 		$insert_arrays[] = array
 		(
-				'user_acc_id' => "multiple_updated value now",
-				'pod_id' => $GetUniqueFileName,
-			'pod_title'=>'pod_title'
+			'FieldID1' => 'Value3',
+			'FieldID2' => 'Value3',
+			'FieldID3'=> 'Value3'
 		);
 		
 		Call it like this:
-		Insert('table',$insert_arrays);
+		Insert($strTableName ,$insert_arrays);
 
 		If ran successfully, it will return the insert id else 0
 
@@ -251,11 +252,12 @@ function Update($strTableName, $array_fields, $array_where)
   	This will update the row values
   	If it ran successfully, it will return 1 else will
    
-    $strTableName = "TableName";
-
+    
     //It would be in your best interested to run your values through CleanDBData($Data) function 
     //to prevent any sql injections which potentially cause problems in your database.
-
+    
+    $strTableName = "TalbeName";
+    
     $array_fields = array(
       'FieldName1' => CleanDBData(FieldValue1),
       'FieldName2' => CleanDBData(FieldValue2),
@@ -266,7 +268,8 @@ function Update($strTableName, $array_fields, $array_where)
       'rec_id' => 2,
       'rec_dt' => date("Y-m-d"),    
     );
-    Call it like this:  Update($strTableName, $array_fields, $array_where)
+    //Call it like this:  
+    Update($strTableName, $array_fields, $array_where)
   * 
   */
 
@@ -334,7 +337,8 @@ function Delete($strTableName,$strFieldName,$strFieldDeleteValueEqualTo)
   	This will delete all rows where field name equals delete value. 
   	If it ran successfully, it will return 1 else 0
 
-  	Call it like this:  Delete("users","user_id","codewithmark");
+  	//Call it like this:  
+  	Delete("users","user_id","codewithmark");
 
   */
   
